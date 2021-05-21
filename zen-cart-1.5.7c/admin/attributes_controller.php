@@ -1272,7 +1272,7 @@ function zen_js_option_values_list($selectedName, $fieldName)
 <!--- Dual Pricing start --->
                         <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
                            <?php echo zen_draw_label(TABLE_HEADING_OPT_PRICE_W, 'options_values_price_w', 'class="control-label"'); ?>
-                           <?php echo zen_draw_input_field('value_price_w', $attributes_value['options_values_price_w'], 'class="form-control" id="options_values_price_w"'); ?>
+                           <?php echo zen_draw_input_field('value_price_w', $attributes_value['options_values_price_w'], 'size="4" class="form-control" id="options_values_price_w"'); ?>
 			</div>
 <!--- Dual Pricing end --->
                         <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
