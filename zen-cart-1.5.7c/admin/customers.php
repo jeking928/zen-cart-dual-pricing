@@ -1,4 +1,4 @@
-<?php
+<?php //plugin Dual Pricing
 /**
  * @copyright Copyright 2003-2020 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
@@ -95,9 +95,7 @@ if (zen_not_null($action)) {
       $customers_email_format = zen_db_prepare_input($_POST['customers_email_format']);
       $customers_gender = !empty($_POST['customers_gender']) ? zen_db_prepare_input($_POST['customers_gender']) : '';
       $customers_dob = (empty($_POST['customers_dob']) ? zen_db_prepare_input('0001-01-01 00:00:00') : zen_db_prepare_input($_POST['customers_dob']));
-/* Dual Pricing start */
-      $customers_whole = zen_db_prepare_input($_POST['customers_whole']);
-/* Dual Pricing end */
+
       $customers_authorization = zen_db_prepare_input($_POST['customers_authorization']);
       $customers_referral = zen_db_prepare_input($_POST['customers_referral']);
 
@@ -258,9 +256,6 @@ if (zen_not_null($action)) {
           array('fieldName' => 'customers_email_format', 'value' => $customers_email_format, 'type' => 'stringIgnoreNull'),
           array('fieldName' => 'customers_authorization', 'value' => $customers_authorization, 'type' => 'stringIgnoreNull'),
           array('fieldName' => 'customers_referral', 'value' => $customers_referral, 'type' => 'stringIgnoreNull'),
-/* Dual Pricing start */
-	  array('fieldName' => 'customers_whole', 'value' => $customers_whole, 'type' => 'stringIgnoreNull'),
-/* Dual Pricing end */
         );
 
         if (ACCOUNT_GENDER == 'true') {
@@ -269,7 +264,10 @@ if (zen_not_null($action)) {
         if (ACCOUNT_DOB == 'true') {
           $sql_data_array[] = array('fieldName' => 'customers_dob', 'value' => ($customers_dob == '0001-01-01 00:00:00' ? '0001-01-01 00:00:00' : zen_date_raw($customers_dob)), 'type' => 'date');
         }
-
+//bof plugin Dual Pricing 1 of 2
+//this notifier is available in ZC158
+        $zco_notifier->notify('NOTIFY_ADMIN_CUSTOMERS_CUSTOMER_UPDATE', $customers_id, $sql_data_array);
+//eof plugin Dual Pricing 1 of 2
         $db->perform(TABLE_CUSTOMERS, $sql_data_array, 'update', "customers_id = '" . (int)$customers_id . "'");
 
         $db->Execute("UPDATE " . TABLE_CUSTOMERS_INFO . "
@@ -414,9 +412,8 @@ if (zen_not_null($action)) {
       zen_redirect(zen_href_link(FILENAME_CUSTOMERS, zen_get_all_get_params(array('cID', 'action')), 'NONSSL'));
       break;
     default:
-/* Dual Pricing start */
+//plugin Dual Pricing 2 of 2: add field c.customers_whole
         $customers = $db->Execute("SELECT c.customers_id, c.customers_gender, c.customers_firstname, c.customers_whole,
-/* Dual Pricing end */
                                         c.customers_lastname, c.customers_dob, c.customers_email_address,
                                         a.entry_company, a.entry_street_address, a.entry_suburb,
                                         a.entry_postcode, a.entry_city, a.entry_state, a.entry_zone_id,
@@ -696,16 +693,7 @@ if (zen_not_null($action)) {
                 ?>
             </div>
           </div>
-<!--- Dual Pricing start --->
-          <div class="form-group">
-	      <?php echo  zen_draw_label(ENTRY_WHOLESALE_PRICING_LEVEL, 'customers_whole', 'class="col-sm-3 control-label"'); ?>
-	    <div class="col-sm-9 col-md-6">
-	      <?php echo zen_draw_input_field('customers_whole', htmlspecialchars($cInfo->customers_whole, ENT_COMPAT, CHARSET, TRUE), zen_set_field_length(TABLE_CUSTOMERS, 'customers_whole', 50) . ' class="form-control"', true); ?>
-		<?php echo NOTES_WHOLESALE_PRICING_LEVEL; ?>
-	    </div>
-	  </div>
-<!--- Dual Pricing end --->
-	</div>
+        </div>
         <?php
         if (ACCOUNT_COMPANY == 'true') {
           ?>
@@ -1051,14 +1039,6 @@ if (zen_not_null($action)) {
           case 'id-asc':
             $disp_order = "ci.customers_info_date_account_created";
             break;
-/* Dual Pricing start */
-          case 'wholesale':
-            $disp_order = "c.customers_whole";
-            break;
-          case 'wholesale-desc':
-            $disp_order = "c.customers_whole DESC";
-	    break;
-/* Dual Pricing end */
           case 'firstname':
             $disp_order = "c.customers_firstname";
             break;
@@ -1128,13 +1108,6 @@ if (zen_not_null($action)) {
                     <a href="<?php echo zen_href_link(basename($PHP_SELF), zen_get_all_get_params(array('list_order', 'page')) . 'list_order=company', 'NONSSL'); ?>"><?php echo ($_GET['list_order'] == 'company' ? '<span class="SortOrderHeader">Asc</span>' : '<span class="SortOrderHeaderLink">Asc</span>'); ?></a>&nbsp;
                     <a href="<?php echo zen_href_link(basename($PHP_SELF), zen_get_all_get_params(array('list_order', 'page')) . 'list_order=company-desc', 'NONSSL'); ?>"><?php echo ($_GET['list_order'] == 'company-desc' ? '<span class="SortOrderHeader">Desc</span>' : '<span class="SortOrderHeaderLink">Desc</span>'); ?></a>
                   </th>
-<!--- Dual Pricing start --->
-		  <th class="dataTableHeadingContent">
-                    <?php echo (($_GET['list_order']=='wholesale' or $_GET['list_order']=='wholesale-desc') ? '<span class="SortOrderHeader">' . TABLE_HEADING_WHOLESALE . '</span>' : TABLE_HEADING_WHOLESALE); ?><br>
-                    <a href="<?php echo zen_href_link(basename($PHP_SELF) . '?list_order=wholesale', '', 'NONSSL'); ?>"><?php echo ($_GET['list_order']=='wholesale' ? '<span class="SortOrderHeader">Asc</span>' : '<span class="SortOrderHeaderLink">Asc</b>'); ?></a>&nbsp;
-                    <a href="<?php echo zen_href_link(basename($PHP_SELF) . '?list_order=wholesale-desc', '', 'NONSSL'); ?>"><?php echo ($_GET['list_order']=='wholesale-desc' ? '<span class="SortOrderHeader">Desc</span>' : '<span class="SortOrderHeaderLink">Desc</b>'); ?></a>
-                 </th>
-<!--- Dual Pricing end --->
                   <?php
                   // -----
                   // If a plugin has additional columns to add to the display, it attaches to both this "listing header" and (see below)
@@ -1231,8 +1204,8 @@ if (zen_not_null($action)) {
                   $new_fields = '';
 
                   $zco_notifier->notify('NOTIFY_ADMIN_CUSTOMERS_LISTING_NEW_FIELDS', array(), $new_fields, $disp_order);
-/* Dual Pricing start */
-                  $customers_query_raw = "SELECT c.customers_id, c.customers_lastname, c.customers_firstname, c.customers_email_address, c.customers_group_pricing, c.customers_telephone, c.customers_authorization, c.customers_referral, c.customers_secret, c.customers_whole,
+
+                  $customers_query_raw = "SELECT c.customers_id, c.customers_lastname, c.customers_firstname, c.customers_email_address, c.customers_group_pricing, c.customers_telephone, c.customers_authorization, c.customers_referral, c.customers_secret,
                                            a.entry_country_id, a.entry_company, a.entry_company, a.entry_street_address, a.entry_city, a.entry_postcode,
                                            ci.customers_info_date_of_last_logon, ci.customers_info_date_account_created
                                            " . $new_fields . ",
@@ -1243,7 +1216,6 @@ if (zen_not_null($action)) {
                                     LEFT JOIN " . TABLE_COUPON_GV_CUSTOMER . " cgc ON c.customers_id = cgc.customer_id
                                     " . $search . "
                                     ORDER BY " . $disp_order;
-/* Dual Pricing End */
 
 // Split Page
 // reset page when page is unknown
@@ -1321,9 +1293,6 @@ if (zen_not_null($action)) {
                 <td class="dataTableContent"><?php echo $customer['customers_lastname']; ?></td>
                 <td class="dataTableContent"><?php echo $customer['customers_firstname']; ?></td>
                 <td class="dataTableContent"><?php echo $customer['entry_company']; ?></td>
-<!--- Dual Pricing start --->
-		<td class="dataTableContent"><?php echo $customer['customers_whole']; ?></td>
-<!--- Dual Pricing end --->
                 <?php
                 // -----
                 // If a plugin has additional columns to add to the display, it attaches to both this "listing element" and (see above)
